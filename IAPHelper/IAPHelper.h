@@ -7,14 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "StoreKit/StoreKit.h"
+#import <StoreKit/StoreKit.h>
 
 
 typedef void (^IAPProductsResponseBlock)(SKProductsRequest* request , SKProductsResponse* response);
 
 typedef void (^IAPbuyProductCompleteResponseBlock)(SKPaymentTransaction* transcation);
 
-typedef void (^checkReceiptCompleteResponseBlock)(NSString* response,NSError* error);
+typedef void (^checkReceiptCompleteResponseBlock)(NSData* response,NSError* error);
 
 typedef void (^resoreProductsCompleteResponseBlock) (SKPaymentQueue* payment,NSError* error);
 
@@ -25,6 +25,11 @@ typedef void (^resoreProductsCompleteResponseBlock) (SKPaymentQueue* payment,NSE
 @property (nonatomic,strong) NSMutableSet *purchasedProducts;
 @property (nonatomic,strong) SKProductsRequest *request;
 @property (nonatomic) BOOL production;
+
+@property (nonatomic,copy) IAPProductsResponseBlock requestProductsBlock;
+@property (nonatomic,copy) IAPbuyProductCompleteResponseBlock buyProductCompleteBlock;
+@property (nonatomic,copy) resoreProductsCompleteResponseBlock restoreCompletedBlock;
+@property (nonatomic,copy) checkReceiptCompleteResponseBlock checkReceiptCompleteBlock;
 
 //init With Product Identifiers
 - (id)initWithProductIdentifiers:(NSSet *)productIdentifiers;
@@ -57,6 +62,8 @@ typedef void (^resoreProductsCompleteResponseBlock) (SKPaymentQueue* payment,NSE
 - (void)clearSavedPurchasedProducts;
 - (void)clearSavedPurchasedProductByID:(NSString*)productIdentifier;
 
+//finish trans
+- (void)finishTransaction:(SKPaymentTransaction *)transaction;
 
 //Get The Price with local currency
 - (NSString *)getLocalePrice:(SKProduct *)product;

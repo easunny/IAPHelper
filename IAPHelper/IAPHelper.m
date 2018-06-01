@@ -16,10 +16,6 @@
 
 
 @interface IAPHelper()
-@property (nonatomic,copy) IAPProductsResponseBlock requestProductsBlock;
-@property (nonatomic,copy) IAPbuyProductCompleteResponseBlock buyProductCompleteBlock;
-@property (nonatomic,copy) resoreProductsCompleteResponseBlock restoreCompletedBlock;
-@property (nonatomic,copy) checkReceiptCompleteResponseBlock checkReceiptCompleteBlock;
 
 @property (nonatomic,strong) NSMutableData* receiptRequestData;
 @end
@@ -154,15 +150,11 @@
     
     [self recordTransaction: transaction];
     
-    if ([SKPaymentQueue defaultQueue]) {
-        [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
-    }
-    
-    if(_buyProductCompleteBlock)
-    {
+    if(_buyProductCompleteBlock) {
         _buyProductCompleteBlock(transaction);
+    }else {
+        [self finishTransaction:transaction];
     }
-    
 }
 
 - (void)restoreTransaction:(SKPaymentTransaction *)transaction {
@@ -171,16 +163,11 @@
     [self recordTransaction: transaction];
     [self provideContentWithTransaction:transaction];
     
-    if ([SKPaymentQueue defaultQueue]) {
-        [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
-            
+    [self finishTransaction:transaction];
 
-        if(_buyProductCompleteBlock!=nil)
-        {
-            _buyProductCompleteBlock(transaction);
-        }
+    if(_buyProductCompleteBlock) {
+        _buyProductCompleteBlock(transaction);
     }
-    
 }
 
 - (void)failedTransaction:(SKPaymentTransaction *)transaction {
@@ -190,13 +177,11 @@
         NSLog(@"Transaction error: %@ %ld", transaction.error.localizedDescription,(long)transaction.error.code);
     }
 
-    if ([SKPaymentQueue defaultQueue]) {
-        [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
-        if(_buyProductCompleteBlock) {
-            _buyProductCompleteBlock(transaction);
-        }
+    [self finishTransaction:transaction];
+
+    if(_buyProductCompleteBlock) {
+        _buyProductCompleteBlock(transaction);
     }
-    
 }
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions
@@ -225,7 +210,7 @@
     
     self.buyProductCompleteBlock = completion;
     
-    self.restoreCompletedBlock = nil;
+//    self.restoreCompletedBlock = nil;
     SKPayment *payment = [SKPayment paymentWithProduct:productIdentifier];
 
     if ([SKPaymentQueue defaultQueue]) {
@@ -237,7 +222,7 @@
 -(void)restoreProductsWithCompletion:(resoreProductsCompleteResponseBlock)completion {
 
     //clear it
-    self.buyProductCompleteBlock = nil;
+//    self.buyProductCompleteBlock = nil;
     
     self.restoreCompletedBlock = completion;
     if ([SKPaymentQueue defaultQueue]) {
@@ -279,6 +264,13 @@
         _restoreCompletedBlock(queue,nil);
     }
 
+}
+
+- (void)finishTransaction:(SKPaymentTransaction *)transaction
+{
+    if ([SKPaymentQueue defaultQueue]) {
+        [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+    }
 }
 
 - (void)checkReceipt:(NSData*)receiptData onCompletion:(checkReceiptCompleteResponseBlock)completion
@@ -362,10 +354,9 @@
 }
 
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    NSString *response = [[NSString alloc] initWithData:self.receiptRequestData encoding:NSUTF8StringEncoding];
     
     if(_checkReceiptCompleteBlock) {
-        _checkReceiptCompleteBlock(response,nil);
+        _checkReceiptCompleteBlock(self.receiptRequestData, nil);
     }
 }
 

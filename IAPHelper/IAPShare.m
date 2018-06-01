@@ -25,10 +25,13 @@
     return _sharedHelper;
 }
 
-+(id)toJSON:(NSString *)json
++(id)toJSON:(NSData *)jsonData
 {
+    if (!jsonData) {
+        return nil;
+    }
     NSError* e = nil;
-    id jsonObject = [NSJSONSerialization JSONObjectWithData: [json dataUsingEncoding:NSUTF8StringEncoding]
+    id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData
                                     options: NSJSONReadingMutableContainers
                                       error: &e];
     
@@ -36,7 +39,7 @@
         return jsonObject;
     }
     else {
-        NSLog(@"%@",[e localizedDescription]);
+//        NSLog(@"%@",[e localizedDescription]);
         return nil;
     }
     
